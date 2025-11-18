@@ -10,8 +10,8 @@ import fs from 'fs';
 // ------------------------------
 // CONFIG AREA
 // ------------------------------
-const TOKEN = "BOT_TOKEN_BURAYA"; // ← BURAYA KENDİ TOKENİNİ YAZ
-const ADMIN_ID = 123456789;       // ← BURAYA KENDİ TELEGRAM ID'NI YAZ
+const TOKEN = "8335971220:AAH9xspYENEO332p2lo2YmcDlmhg5sKkFOE"; // ← BURAYA KENDİ TOKENİNİ YAZ
+const ADMIN_ID =6637073949;       // ← BURAYA KENDİ TELEGRAM ID'NI YAZ
 const PORT = process.env.PORT || 3000;
 
 const bot = new Telegraf(TOKEN);
