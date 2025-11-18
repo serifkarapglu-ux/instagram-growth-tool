@@ -11,7 +11,7 @@ import fs from 'fs';
 // CONFIG AREA
 // ------------------------------
 const TOKEN = "8335971220:AAH9xspYENEO332p2lo2YmcDlmhg5sKkFOE"; // ← BURAYA KENDİ TOKENİNİ YAZ
-const ADMIN_ID =6446532700;       // ← BURAYA KENDİ TELEGRAM ID'NI YAZ
+const ADMIN_ID ="6446532700";       // ← BURAYA KENDİ TELEGRAM ID'NI YAZ
 const PORT = process.env.PORT || 3000;
 
 const bot = new Telegraf(TOKEN);
