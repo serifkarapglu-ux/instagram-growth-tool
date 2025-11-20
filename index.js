@@ -1,135 +1,48 @@
-// ------------------------------
-// TELEGRAM + RENDER + WEBHOOK + LICENSE SYSTEM
-// FULL WORKING PROJECT (index.js)
-// ------------------------------
-
-import express from 'express';
-import { Telegraf } from 'telegraf';
-import fs from 'fs';
-
-// ------------------------------
-// CONFIG AREA
-// ------------------------------
-const TOKEN = "8335971220:AAH9xspYENEO332p2lo2YmcDlmhg5sKkFOE"; // ← BURAYA KENDİ TOKENİNİ YAZ
-const ADMIN_ID ="6446532700";       // ← BURAYA KENDİ TELEGRAM ID'NI YAZ
-const PORT = process.env.PORT || 3000;
-
-const bot = new Telegraf(TOKEN);
+// Gerekli paketler
+const express = require("express");
 const app = express();
+require("dotenv").config();
+
 app.use(express.json());
 
-// ------------------------------
-// DATABASE - LICENSE KEY SYSTEM
-// ------------------------------
-const KEYPATH = './keys.json';
-if (!fs.existsSync(KEYPATH)) fs.writeFileSync(KEYPATH, JSON.stringify({}, null, 2));
-let keys = JSON.parse(fs.readFileSync(KEYPATH));
-
-function saveKeys(){
-  fs.writeFileSync(KEYPATH, JSON.stringify(keys, null, 2));
-}
-
-// ------------------------------
-// LICENSE VERIFY FUNCTION
-// ------------------------------
-function verifyKey(key, userId){
-  if(!keys[key]) return {success:false, msg:"❌ Geçersiz key."};
-  let obj = keys[key];
-
-  if(obj.isUsed && obj.ownerId !== userId)
-    return {success:false, msg:"❌ Bu key başka kullanıcıya kayıtlı."};
-
-  if(new Date(obj.expiresAt) < new Date())
-    return {success:false, msg:"❌ Key süresi dolmuş."};
-
-  obj.isUsed = true;
-  obj.ownerId = userId;
-  saveKeys();
-  return {success:true, msg:"✅ Giriş başarılı! Menü yükleniyor..."};
-}
-
-// ------------------------------
-// SIMPLE SESSION
-// ------------------------------
-const userState = {}; // session tutuyor
-
-// ------------------------------
-// START COMMAND
-// ------------------------------
-bot.start((ctx) => {
-  ctx.reply("🔐 Lütfen lisans anahtarını giriniz:");
-  userState[ctx.from.id] = { waitKey: true };
+// Ana endpoint (çalışıyor mu test için)
+app.get("/", (req, res) => {
+    res.send("Instagram Growth Tool Aktif ✔️");
 });
 
-// ------------------------------
-// TEXT MESSAGE HANDLER
-// ------------------------------
-bot.on('text', (ctx) => {
-  const uid = ctx.from.id;
-  const text = ctx.message.text;
+// Key doğrulama sistemi
+app.get("/api", (req, res) => {
+    const key = req.query.key;
+    const id = req.query.id;
 
-  // LICENSE INPUT
-  if(userState[uid]?.waitKey){
-    let r = verifyKey(text, uid);
-    ctx.reply(r.msg);
-    if(r.success){
-      userState[uid].waitKey = false;
-      showMenu(ctx);
+    if (key !== process.env.API_KEY || id !== process.env.API_ID) {
+        return res.status(403).json({ error: "Geçersiz key veya ID" });
     }
-    return;
-  }
+
+    res.json({
+        status: "Başarılı",
+        message: "Doğrulama geçti!"
+    });
 });
 
-// ------------------------------
-// ADMIN KEY CREATE COMMAND
-// ------------------------------
-bot.command('createkey', (ctx) => {
-  if(ctx.from.id !== ADMIN_ID) return;
+// Instagram endpoint örneği (geliştirilecek)
+app.post("/send-like", (req, res) => {
+    const key = req.query.key;
+    const id = req.query.id;
 
-  const args = ctx.message.text.split(" ");
-  const days = parseInt(args[1]);
-  if(!days) return ctx.reply("Gün belirt. Örnek: /createkey 30");
+    if (key !== process.env.API_KEY || id !== process.env.API_ID) {
+        return res.status(403).json({ error: "Geçersiz key veya ID" });
+    }
 
-  const key = Math.random().toString(36).substring(2,10).toUpperCase();
-  const expiresAt = new Date(Date.now() + days*24*60*60*1000);
+    const { username, amount } = req.body;
 
-  keys[key] = { ownerId:null, expiresAt, isUsed:false };
-  saveKeys();
-
-  ctx.reply(`🔑 Yeni Key Oluşturuldu:\n${key}\n📅 Süre: ${days} gün`);
+    res.json({
+        status: "işlem alındı",
+        user: username,
+        adet: amount,
+    });
 });
 
-// ------------------------------
-// MAIN MENU
-// ------------------------------
-function showMenu(ctx){
-  ctx.reply(
-`📊 *Instagram Growth Panel*
-
-1️⃣ Hashtag Analizi
-2️⃣ Rakip Analizi
-3️⃣ En İyi Saate Analizi
-4️⃣ Trend Müzikler
-5️⃣ İçerik Öneri Motoru
-6️⃣ Reels Performans Takibi
-7️⃣ 30 Günlük İçerik Takvimi`, 
-{parse_mode:'Markdown'}
-);
-}
-
-// ------------------------------
-// WEBHOOK ENDPOINT
-// ------------------------------
-app.post(`/${TOKEN}`, (req, res) => {
-  bot.handleUpdate(req.body);
-  res.sendStatus(200);
-});
-
-app.get('/', (req,res) => {
-  res.send("Bot Çalışıyor ✔️");
-});
-
-// ------------------------------
-app.listen(PORT, () => {
-  console.log("Server başladı → PORT:", PORT);
-});
+// Render için port ayarı
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Sunucu çalışıyor → ${PORT}`));
